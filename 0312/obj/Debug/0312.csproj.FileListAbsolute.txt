@@ -1,0 +1,9 @@
+C:\Users\main\Downloads\0312\0312\bin\Debug\0312.exe.config
+C:\Users\main\Downloads\0312\0312\bin\Debug\0312.exe
+C:\Users\main\Downloads\0312\0312\bin\Debug\0312.pdb
+C:\Users\main\Downloads\0312\0312\obj\Debug\0312.csprojResolveAssemblyReference.cache
+C:\Users\main\Downloads\0312\0312\obj\Debug\_0312.Form1.resources
+C:\Users\main\Downloads\0312\0312\obj\Debug\_0312.Properties.Resources.resources
+C:\Users\main\Downloads\0312\0312\obj\Debug\0312.csproj.GenerateResource.Cache
+C:\Users\main\Downloads\0312\0312\obj\Debug\0312.exe
+C:\Users\main\Downloads\0312\0312\obj\Debug\0312.pdb
