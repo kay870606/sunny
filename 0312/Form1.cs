@@ -12,9 +12,8 @@ namespace _0312
 {
     public partial class Form1 : Form
     {
-
         double operand = 0, lastOperand = 0;
-        Boolean optrPressed = false, equalPressed = false;
+        Boolean optrPressed = false, equalPressed = false, isDot = false;
         int lastOperator = 0;
 
         public Form1()
@@ -22,7 +21,7 @@ namespace _0312
             InitializeComponent();
         }
 
-        private void button_Click(object sender, EventArgs e)
+        private void buttonNumber_Click(object sender, EventArgs e)
         {
             Button button = (Button)sender;
 
@@ -40,25 +39,113 @@ namespace _0312
             optrPressed = false;
         }
 
-        private void button_Operate_Click(object sender, EventArgs e)
+        private double eval(Queue<string> inqueue)
+        {
+            Queue<string> outqueue = new Queue<string>();
+            Stack<double> outstack = new Stack<double>();
+            Stack<string> opstack = new Stack<string>();
+            double n = 0;
+
+            foreach (string s in inqueue)
+            {
+                if (Double.TryParse(s, out n))
+                    outqueue.Enqueue(s);
+                else
+                {
+                    if (opstack.Count == 0)
+                        opstack.Push(s);
+                    else
+                    {
+                        if (s == "+" || s == "-")
+                        {
+                            while (opstack.Count > 0)
+                            {
+                                outqueue.Enqueue(opstack.Peek());
+                                opstack.Pop();
+                            }
+                            opstack.Push(s);
+                        }
+
+                        if (s == "*" || s == "/")
+                        {
+                            if (opstack.Peek() == "*" || opstack.Peek() == "/")
+                            {
+                                outqueue.Enqueue(opstack.Peek());
+                                opstack.Pop();
+                            }
+                            opstack.Push(s);
+                        }
+                    }
+                }
+            }
+
+            while (opstack.Count > 0)
+            {
+                outqueue.Enqueue(opstack.Peek());
+                opstack.Pop();
+            }
+
+            //Console.Write("=> ");
+
+            foreach (string s in outqueue)
+            {
+                //Console.Write(s + " ");
+
+                if (Double.TryParse(s, out n))
+                    outstack.Push(n);
+                else
+                {
+                    double v2 = outstack.Peek();
+                    outstack.Pop();
+                    double v1 = outstack.Peek();
+                    outstack.Pop();
+                    if (s == "+")
+                        outstack.Push(v1 + v2);
+                    else if (s == "-")
+                        outstack.Push(v1 - v2);
+                    else if (s == "*")
+                        outstack.Push(v1 * v2);
+                    else if (s == "/")
+                        outstack.Push(v1 / v2);
+                }
+            }
+            return outstack.Peek();
+        }
+        private void calc()
+        {
+
+        }
+
+        private void buttonOperate_Click(object sender, EventArgs e)
         {
             Button button = (Button)sender;
 
             if (optrPressed)
                 textBoxExpression.Text = textBoxExpression.Text.Substring
-                    (0, textBoxExpression.Text.Length - 1) + button.Text;
+                    (0, textBoxExpression.Text.Length - 2) + button.Text + " ";
             else if (equalPressed)
             {
-                textBoxExpression.Text = textBoxResult.Text + button.Text;
-
+                textBoxExpression.Text = textBoxResult.Text + " " + button.Text + " ";
             }
             else
             {
-                textBoxExpression.Text += textBoxResult.Text + button.Text;
+                textBoxExpression.Text += textBoxResult.Text + " ";
 
-                if (lastOperator == 0)
+                string[] expression = textBoxExpression.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                Queue<string> inqueue = new Queue<string>();
+
+                foreach (string s in expression)
                 {
-                    textBoxResult.Text = (operand + Convert.ToDouble(textBoxResult.Text)).ToString();
+                    inqueue.Enqueue(s);
+                }
+
+                textBoxResult.Text = eval(inqueue).ToString();
+
+                textBoxExpression.Text += button.Text + " ";
+                /*if (lastOperator == 0)
+                {
+                    
                 }
                 else if (lastOperator == 1)
                 {
@@ -67,7 +154,7 @@ namespace _0312
                 else if (lastOperator == 2)
                 {
                     textBoxResult.Text = (operand * Convert.ToDouble(textBoxResult.Text)).ToString();
-                }
+                }*/
             }
 
             if (button.Text == "+")
@@ -76,14 +163,14 @@ namespace _0312
                 lastOperator = 1;
             else if (button.Text == "*")
                 lastOperator = 2;
-
-            operand = Convert.ToDouble(textBoxResult.Text);
+            else if (button.Text == "/")
+                lastOperator = 3;
 
             equalPressed = false;
             optrPressed = true;
         }
 
-        private void button_Clear_Click(object sender, EventArgs e)
+        private void buttonClear_Click(object sender, EventArgs e)
         {
             textBoxResult.Text = "0";
             textBoxExpression.Text = "";
@@ -92,16 +179,29 @@ namespace _0312
             lastOperator = 0;
             optrPressed = false;
             equalPressed = false;
+            isDot = false;
         }
 
-        private void button_Equal_Click(object sender, EventArgs e)
+        private void buttonEqual_Click(object sender, EventArgs e)
         {
-            if (textBoxExpression.Text == "") textBoxExpression.Text = textBoxResult.Text + "=";
+            if (textBoxExpression.Text == "") textBoxExpression.Text = textBoxResult.Text + " " + "=" + " ";
             else
             {
                 if (equalPressed)
                 {
-                    operand = Convert.ToDouble(textBoxResult.Text);
+                    string[] expression = textBoxExpression.Text.Substring
+                    (0, textBoxExpression.Text.Length - 2).Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    Queue<string> inqueue = new Queue<string>();
+
+                    foreach (string s in expression)
+                    {
+                        inqueue.Enqueue(s);
+                    }
+
+                    textBoxResult.Text = eval(inqueue).ToString();
+                    textBoxExpression.Text = textBoxResult.Text + " " + expression[1] + " " + expression[2] + " " + "=" + " ";
+                    /*operand = Convert.ToDouble(textBoxResult.Text);
                     if (lastOperator == 0)
                     {
                         textBoxExpression.Text = textBoxResult.Text + "+" + lastOperand + "=";
@@ -116,12 +216,28 @@ namespace _0312
                     {
                         textBoxExpression.Text = textBoxResult.Text + "*" + lastOperand + "=";
                         textBoxResult.Text = (lastOperand * Convert.ToDouble(textBoxResult.Text)).ToString();
-                    }
+                    }*/
                 }
                 else
                 {
-                    textBoxExpression.Text += textBoxResult.Text + "=";
+                    textBoxExpression.Text += textBoxResult.Text;
+
+                    string[] expression = textBoxExpression.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    Queue<string> inqueue = new Queue<string>();
+
+                    foreach (string s in expression)
+                    {
+                        inqueue.Enqueue(s);
+                    }
+
                     lastOperand = Convert.ToDouble(textBoxResult.Text);
+                    textBoxResult.Text = eval(inqueue).ToString();
+                    textBoxExpression.Text += " " + "=" + " ";
+
+                    /*textBoxExpression.Text += textBoxResult.Text + " " + "=" + " ";
+                     
+                      lastOperand = Convert.ToDouble(textBoxResult.Text);
 
                     if (lastOperator == 0)
                     {
@@ -134,13 +250,13 @@ namespace _0312
                     else if (lastOperator == 2)
                     {
                         textBoxResult.Text = (operand * Convert.ToDouble(textBoxResult.Text)).ToString();
-                    }
+                    }*/
                 }
             }
             equalPressed = true;
         }
 
-        private void button_Backspace_Click(object sender, EventArgs e)
+        private void buttonBackspace_Click(object sender, EventArgs e)
         {
             if (textBoxResult.Text.Length == 1)
                 textBoxResult.Text = "0";
@@ -151,14 +267,22 @@ namespace _0312
             equalPressed = false;
         }
 
-        private void button_ClearError_Click(object sender, EventArgs e)
+        private void buttonDot_Click(object sender, EventArgs e)
+        {
+            if (isDot == false && equalPressed == false)
+                textBoxResult.Text += '.';
+            isDot = true;
+        }
+
+        private void buttonClearError_Click(object sender, EventArgs e)
         {
             while (textBoxResult.Text.Length != 1)
                 textBoxResult.Text = textBoxResult.Text.Substring(0, textBoxResult.Text.Length - 1);
             textBoxResult.Text = "0";
+            isDot = false;
         }
 
-        private void button_Sign_Click(object sender, EventArgs e)
+        private void buttonSign_Click(object sender, EventArgs e)
         {
             int sign = Convert.ToInt32(textBoxResult.Text);
             textBoxResult.Text = (-1 * sign).ToString();
